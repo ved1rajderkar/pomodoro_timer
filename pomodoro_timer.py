@@ -1,8 +1,6 @@
 import ttkbootstrap as tb
-from tkinter import StringVar, IntVar
+from tkinter import StringVar, IntVar, messagebox
 from plyer import notification
-import time
-import threading
 
 class PomodoroApp:
     def __init__(self, root):
@@ -47,6 +45,17 @@ class PomodoroApp:
         self.session_label = tb.Label(root, textvariable=self.session_count, font="Arial 14")
         self.session_label.pack(pady=5)
 
+    def validated_input(self):
+        try:
+            work_time = int(self.work_entry.get())
+            break_time = int(self.break_entry.get())
+            if work_time <= 0 or break_time <= 0:
+                raise ValueError
+            return work_time, break_time
+        except ValueError:
+            messagebox.showerror("Invalid Input", "Please enter valid positive numbers for work and break times.")
+            return None, None
+
     def start_timer(self):
         """Start the Pomodoro timer with user-defined times."""
         if not self.timer_running:
@@ -57,6 +66,12 @@ class PomodoroApp:
     def stop_timer(self):
         """Stop the timer."""
         self.timer_running = False
+
+    def reset_timer(self):
+        self.timer_running = False
+        self.time_left = self.work_time.get() * 60
+        self.time_display.comfig(text=f'{self.work_time.get():02d}:00')
+        self.status_label.config(text='work session')
 
     def run_timer(self):
         """Run the countdown timer."""
@@ -82,6 +97,9 @@ class PomodoroApp:
                 self.status_label.config(text="Work Session")
                 self.time_left = self.work_time.get() * 60  # Get updated work time
             self.start_timer()
+
+    def send_notification(self,title,message):
+        notification.notify(title=title, message=message, timeout=5)
 
 # Run the App
 root = tb.Window(themename="superhero")
